@@ -1,5 +1,7 @@
 from src.main import bp
 from flask import make_response, jsonify
+from src.models.company import Company
+from src.extensions import db
 
 
 @bp.route("/test")
@@ -9,4 +11,7 @@ def test():
 
 @bp.route("/")
 def index(methods=["GET"]):
-    return make_response(jsonify({"message": "Hello World!"}), 200)
+    companies = Company.query.all()
+    companies = [company.to_dict() for company in companies]
+
+    return make_response(jsonify({"companies": companies}), 200)
