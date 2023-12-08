@@ -14,5 +14,5 @@ class Company(db.Model):
     #     (db.Column(db.relationship("Recruiter", backref="company", lazy=True))),
     # )
     # opinion = ((db.Column(db.relationship("Opinion", backref="company", lazy=True))),)
-
+    __repr__ = lambda self: f"Company {self.name}"
 
