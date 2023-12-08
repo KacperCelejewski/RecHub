@@ -3,10 +3,10 @@ from src.extensions import db
 
 
 class User(db.Model):
-    __tablename__ = ("user")
+    __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    surname = db.Column(db.String(80), nullable=False)
+    surrname = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     _password_hash = db.Column(db.String(), unique=True, nullable=False)
 
@@ -28,10 +28,13 @@ class User(db.Model):
 
         Returns:
         bool: True if the password is valid, False otherwise.
-        """
+            """
+        has_uppercase = any(c.isupper() for c in password)
+        has_lowercase = any(c.islower() for c in password)
+        has_digit = any(c.isdigit() for c in password)
 
-        basic_validation = (lambda x: x.isupper() and x.islower())(
-            password
-        )
+        # Check the length of the password
+        is_valid_length = len(password) >= 8
 
-        return len(password) > 8 and basic_validation
+        # Combine all conditions
+        return has_uppercase and has_lowercase and has_digit and is_valid_length
