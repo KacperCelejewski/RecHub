@@ -1,8 +1,9 @@
-from src.companies import bp_companies
-from flask import make_response, jsonify, render_template, request
-from src.models.company import Company
-from src.extensions import db
+from flask import jsonify, make_response, request
 from sqlalchemy.exc import IntegrityError
+
+from src.companies import bp_companies
+from src.extensions import db
+from src.models.company import Company
 
 
 @bp_companies.route("/api/companies/add", methods=["POST"])
@@ -36,22 +37,33 @@ def get_companies():
     print(params)
     if params:
         try:
-            companies = Company.query.filter_by(
-                industry=params["industry"]).all() if params["industry"] else Company.query.all()
-            companies = Company.query.filter_by(
-                technology=params["technology"]).all() if params["technology"] else Company.query.all()
-            companies = Company.query.filter_by(
-                location=params["location"]).all() if params["location"] else Company.query.all()
-            
+            companies = (
+                Company.query.filter_by(industry=params["industry"]).all()
+                if params["industry"]
+                else Company.query.all()
+            )
+            companies = (
+                Company.query.filter_by(technology=params["technology"]).all()
+                if params["technology"]
+                else Company.query.all()
+            )
+            companies = (
+                Company.query.filter_by(location=params["location"]).all()
+                if params["location"]
+                else Company.query.all()
+            )
+
             companies = [
-                {company.id:{
-                    "name": company.name,
-                    "location": company.location,
-                    "technology": company.technology,
-                    "industry": company.industry,
-                    "ceo": company.ceo,
-                    "description": company.description,
-                }}
+                {
+                    company.id: {
+                        "name": company.name,
+                        "location": company.location,
+                        "technology": company.technology,
+                        "industry": company.industry,
+                        "ceo": company.ceo,
+                        "description": company.description,
+                    }
+                }
                 for company in companies
             ]
         except IntegrityError:
@@ -60,17 +72,26 @@ def get_companies():
 
     return make_response(jsonify({"companies": companies}), 200)
 
+
 @bp_companies.route("/api/companies/<int:company_id>", methods=["GET"])
 def get_company(company_id):
     company = Company.query.get_or_404(company_id)
-    return make_response(jsonify({"company": {
-        "name": company.name,
-        "location": company.location,
-        "technology": company.technology,
-        "industry": company.industry,
-        "ceo": company.ceo,
-        "description": company.description,
-    }}), 200)
+    return make_response(
+        jsonify(
+            {
+                "company": {
+                    "name": company.name,
+                    "location": company.location,
+                    "technology": company.technology,
+                    "industry": company.industry,
+                    "ceo": company.ceo,
+                    "description": company.description,
+                }
+            }
+        ),
+        200,
+    )
+
 
 @bp_companies.route("/api/companies/<int:company_id>", methods=["PUT"])
 def update_company(company_id):

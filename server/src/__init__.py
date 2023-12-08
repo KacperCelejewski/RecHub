@@ -1,23 +1,25 @@
 from flask import Flask
 
 from config import Config
-from src.extensions import db
+from src.extensions import db, bcrypt
 from src.models.company import Company
-
+from src.models.user import User
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    bcrypt.init_app(app)
     db.init_app(app)
 
     # Initialize Flask extensions here
     with app.app_context():
         db.create_all()
     # Register blueprints here
-    from src.main import bp_main as main_bp
     from src.companies import bp_companies as company_bp
-
+    from src.main import bp_main as main_bp
+    from src.auth import bp_auth as auth_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(company_bp)
+    app.register_blueprint(auth_bp)
 
     @app.route("/test/")
     def test_page():

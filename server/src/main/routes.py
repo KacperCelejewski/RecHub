@@ -1,7 +1,6 @@
+from flask import jsonify, make_response, render_template
+
 from src.main import bp_main
-from flask import make_response, jsonify, render_template
-
-
 
 
 @bp_main.route("/test")
