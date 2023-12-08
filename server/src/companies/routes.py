@@ -59,3 +59,28 @@ def get_companies():
             return make_response(jsonify({"message": "No companies found!"}), 404)
 
     return make_response(jsonify({"companies": companies}), 200)
+
+@bp_companies.route("/api/companies/<int:company_id>", methods=["GET"])
+def get_company(company_id):
+    company = Company.query.get_or_404(company_id)
+    return make_response(jsonify({"company": {
+        "name": company.name,
+        "location": company.location,
+        "technology": company.technology,
+        "industry": company.industry,
+        "ceo": company.ceo,
+        "description": company.description,
+    }}), 200)
+
+@bp_companies.route("/api/companies/<int:company_id>", methods=["PUT"])
+def update_company(company_id):
+    company = Company.query.get_or_404(company_id)
+    data = request.get_json()
+    company.name = data["name"]
+    company.industry = data["industry"]
+    company.technology = data["technology"]
+    company.location = data["location"]
+    company.ceo = data["ceo"]
+    company.description = data["description"]
+    db.session.commit()
+    return make_response(jsonify({"message": "Company updated!"}), 200)
