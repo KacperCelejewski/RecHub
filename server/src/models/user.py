@@ -95,6 +95,7 @@ class User(db.Model, UserMixin):
     surrname = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(), unique=True, nullable=False)
     password_hashed = db.Column(db.String(), unique=True, nullable=False)
+    opinions = db.relationship("Opinion", backref="author", lazy=True)
 
     @login_manager.user_loader
     def loader_user(user_id):
