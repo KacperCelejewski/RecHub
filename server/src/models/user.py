@@ -1,6 +1,7 @@
 from src.extensions import bcrypt
-from src.extensions import db
+from src.extensions import db, login_manager
 from email_validator import validate_email, EmailNotValidError
+from flask_login import UserMixin
 
 
 class Email:
@@ -12,9 +13,9 @@ class Email:
             valid = validate_email(self.email, check_deliverability=True)
             self.email = valid.normalized
             return True
-        except EmailNotValidError as e:
+        except EmailNotValidError:
             raise EmailNotValidError("Email is not valid!")
-            
+
 
 class PasswordNotValidError(Exception):
     pass
@@ -43,7 +44,6 @@ class Password:
             return True
         else:
             raise PasswordNotValidError("Password has no lowercase!")
-    
 
     def has_digit(self):
         if any(c.isdigit() for c in self.password):
@@ -55,7 +55,9 @@ class Password:
         if any(c in self.special_characters for c in self.password):
             return True
         else:
-            raise PasswordNotValidError("Password has no special character! Approved: !@#$%^&*()-+?_=,<>/")
+            raise PasswordNotValidError(
+                "Password has no special character! Approved: !@#$%^&*()-+?_=,<>/"
+            )
 
     def is_valid(self):
         return (
@@ -68,6 +70,7 @@ class Password:
 
     def hash(self):
         self._password_hash = bcrypt.generate_password_hash(self.password)
+        self._password_hash = self._password_hash.decode("utf-8")
         return self._password_hash
 
     @staticmethod
@@ -85,13 +88,17 @@ class Password:
         return bcrypt.check_password_hash(password_hashed, plain_password)
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     surrname = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(), unique=True, nullable=False)
     password_hashed = db.Column(db.String(), unique=True, nullable=False)
+
+    @login_manager.user_loader
+    def loader_user(user_id):
+        return User.query.get(user_id)
 
     def __repr__(self):
         return f"<User {self.name} {self.surrname} {self.email} {self.password_hashed}>"

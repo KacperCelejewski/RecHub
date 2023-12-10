@@ -1,18 +1,20 @@
 from flask import Flask
 
 from config import Config
-from src.extensions import db, bcrypt
+from src.extensions import db, bcrypt, login_manager
 from src.models.company import Company
 from src.models.user import User
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     bcrypt.init_app(app)
     db.init_app(app)
-
+    login_manager.init_app(app)
     # Initialize Flask extensions here
     with app.app_context():
         db.create_all()
+    
     # Register blueprints here
     from src.companies import bp_companies as company_bp
     from src.main import bp_main as main_bp
