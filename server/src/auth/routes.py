@@ -10,7 +10,6 @@ from src.models.user import PasswordNotValidError
 from flask_login import login_user, logout_user, current_user, login_required
 
 
-
 @bp_auth.route("/api/auth/register", methods=["POST"])
 def register():
     data = request.get_json()
@@ -31,7 +30,6 @@ def register():
             jsonify({"message": "Invalid password!", "error": str({e})}), 400
         )
     if is_valid_email and is_valid_password:
-        
         user = User(
             name=data["name"],
             surrname=data["surrname"],
@@ -48,10 +46,10 @@ def register():
         return make_response(jsonify({"message": "User registered!"}), 201)
     else:
         return make_response(jsonify({"message": "Invalid email or password!"}), 400)
-    
+
+
 @bp_auth.route("/api/auth/login", methods=["POST"])
 def login():
-    
     data = request.get_json()
     if data["email"] is None or data["password"] is None:
         return make_response(jsonify({"message": "Missing email or password!"}), 400)
@@ -64,13 +62,15 @@ def login():
     login_user(user)
     return make_response(jsonify({"message": "User logged in!"}), 200)
 
+
 @login_required
 @bp_auth.route("/api/auth/logout", methods=["GET"])
 def logout():
     logout_user()
     return make_response(jsonify({"message": "User logged out!"}), 200)
 
-@login_required
+
+
 @bp_auth.route("/api/auth/is_logged", methods=["GET"])
 def is_logged():
     if current_user.is_authenticated:
