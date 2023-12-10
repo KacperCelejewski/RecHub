@@ -1,4 +1,12 @@
+import pytest
+from src.models.user import PasswordNotValidError
+from email_validator import EmailNotValidError
+
+
 def test_should_return_201_when_user_is_registered(client):
+    from src.models.user import Password
+    import pickle
+
     response = client.post(
         "/api/auth/register",
         json={
@@ -8,6 +16,7 @@ def test_should_return_201_when_user_is_registered(client):
             "password": "Sample123!",
         },
     )
+
     assert response.status_code == 201
 
 
@@ -47,6 +56,7 @@ def test_should_return_400_when_email_is_empty(client):
             "password": "Sample123!",
         },
     )
+
     assert response.status_code == 400
 
 
@@ -115,5 +125,4 @@ def test_should_return_400_when_password_has_no_special_char(client):
             "password": "Doe12345",
         },
     )
-
     assert response.status_code == 400
