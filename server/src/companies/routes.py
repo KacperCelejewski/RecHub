@@ -35,40 +35,34 @@ def get_companies():
         "location": request.args.get("location", default=None, type=str),
     }
     print(params)
-    if params:
-        try:
-            companies = (
-                Company.query.filter_by(industry=params["industry"]).all()
-                if params["industry"]
-                else Company.query.all()
-            )
-            companies = (
-                Company.query.filter_by(technology=params["technology"]).all()
-                if params["technology"]
-                else Company.query.all()
-            )
-            companies = (
-                Company.query.filter_by(location=params["location"]).all()
-                if params["location"]
-                else Company.query.all()
-            )
+    try:
+        if params["industry"] is not None:
+            companies = Company.query.filter_by(industry=params["industry"]).all()
 
-            companies = [
-                {
-                    company.id: {
-                        "name": company.name,
-                        "location": company.location,
-                        "technology": company.technology,
-                        "industry": company.industry,
-                        "ceo": company.ceo,
-                        "description": company.description,
-                    }
-                }
-                for company in companies
-            ]
-        except IntegrityError:
-            db.session.rollback()
-            return make_response(jsonify({"message": "No companies found!"}), 404)
+
+        elif params["technology"] is not None:
+            companies = Company.query.filter_by(technology=params["technology"]).all()
+
+        elif params["location"] is not None:
+            companies = Company.query.filter_by(location=params["location"]).all()
+        else:
+            companies = Company.query.all()
+
+        companies = [
+            {
+                "id": company.id,
+                "name": company.name,
+                "location": company.location,
+                "technology": company.technology,
+                "industry": company.industry,
+                "ceo": company.ceo,
+                "description": company.description,
+            }
+            for company in companies
+        ]
+    except IntegrityError:
+        db.session.rollback()
+        return make_response(jsonify({"message": "No companies found!"}), 404)
 
     return make_response(jsonify({"companies": companies}), 200)
 

@@ -1,7 +1,7 @@
 from flask import Flask
 
 from config import Config
-from src.extensions import db, bcrypt, login_manager
+from src.extensions import db, bcrypt, login_manager, cors
 from src.models.company import Company
 from src.models.user import User
 from src.models.opinion import Opinion
@@ -16,7 +16,7 @@ def create_app(config_class=Config):
     # Initialize Flask extensions here
     with app.app_context():
         db.create_all()
-
+    cors.init_app(app)
     # Register blueprints here
     from src.companies import bp_companies as company_bp
     from src.main import bp_main as main_bp
