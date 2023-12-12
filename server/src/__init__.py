@@ -11,13 +11,12 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     bcrypt.init_app(app)
     db.init_app(app)
-    app.config["JWT_SECRET_KEY"] = "super-secret"  # Zmień to!
     jwt.init_app(app)
 
     with app.app_context():
         db.create_all()
 
-    # Rejestrowanie blueprintów
+
     from src.companies import bp_companies as company_bp
     from src.main import bp_main as main_bp
     from src.auth import bp_auth as auth_bp
@@ -28,7 +27,6 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_bp)
     app.register_blueprint(opinion_bp)
 
-    # Konfiguracja CORS
     CORS(app, resources={r'/*': {'origins': '*'}})
 
     return app
