@@ -7,9 +7,8 @@ from src.models.user import User, Password, Email
 import pickle
 from email_validator import EmailNotValidError
 from src.models.user import PasswordNotValidError
-from flask_login import login_user, logout_user, current_user, login_required
-
-
+from flask_jwt_extended import create_access_token, create_refresh_token, set_access_cookies, set_refresh_cookies
+from flask_jwt_extended import unset_jwt_cookies, jwt_required, get_jwt_identity
 @bp_auth.route("/api/auth/register", methods=["POST"])
 def register():
     data = request.get_json()
@@ -30,6 +29,8 @@ def register():
             jsonify({"message": "Invalid password!", "error": str({e})}), 400
         )
     if is_valid_email and is_valid_password:
+        if User.query.filter_by(email=email.email).first() is not None:
+            return make_response(jsonify({"message": "User already exists!"}), 409)
         user = User(
             name=data["name"],
             surrname=data["surrname"],
@@ -43,10 +44,15 @@ def register():
             db.session.rollback()
             print(user)
             return make_response(jsonify({"message": "User already exists!"}), 409)
-        return make_response(jsonify({"message": "User registered!"}), 201)
+        access_token = create_access_token(identity=user.id)
+        refresh_token = create_refresh_token(identity=user.id)
+        response = jsonify()
+        set_access_cookies(response, access_token)
+        set_refresh_cookies(response, refresh_token)
+        response = make_response(jsonify({"message": "User registered!", "access_token": access_token}), 201)
+        return response
     else:
         return make_response(jsonify({"message": "Invalid email or password!"}), 400)
-
 
 @bp_auth.route("/api/auth/login", methods=["POST"])
 def login():
@@ -59,24 +65,17 @@ def login():
         return make_response(jsonify({"message": "User not found!"}), 404)
     if not Password.check_corectness(data["password"], user.password_hashed):
         return make_response(jsonify({"message": "Invalid password!"}), 400)
-    login_user(user)
-    return make_response(jsonify({"message": "User logged in!"}), 200)
+    access_token = create_access_token(identity=user.id)
+    refresh_token = create_refresh_token(identity=user.id)
+    return make_response(jsonify({"message": "User logged in!", "access_token": access_token}), 200)
+    
 
 
-@login_required
 @bp_auth.route("/api/auth/logout", methods=["GET"])
+@jwt_required
 def logout():
-    if current_user.is_authenticated:
-        logout_user()
-        return make_response(jsonify({"message": "User logged out!"}), 200)
-    else:
-        return make_response(jsonify({"message": "User is not logged in!"}), 200)
+    response = jsonify()
+    unset_jwt_cookies(response)
+    return response, 200
 
 
-
-@bp_auth.route("/api/auth/is_logged", methods=["GET"])
-def is_logged():
-    if current_user.is_authenticated:
-        return make_response(jsonify({"message": "User is logged in!"}), 200)
-    else:
-        return make_response(jsonify({"message": "User is not logged in!"}), 200)

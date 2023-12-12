@@ -1,5 +1,5 @@
 from src.extensions import bcrypt
-from src.extensions import db, login_manager
+from src.extensions import db
 from email_validator import validate_email, EmailNotValidError
 from flask_login import UserMixin
 
@@ -97,9 +97,6 @@ class User(db.Model, UserMixin):
     password_hashed = db.Column(db.String(), unique=True, nullable=False)
     opinions = db.relationship("Opinion", backref="author", lazy=True)
 
-    @login_manager.user_loader
-    def loader_user(user_id):
-        return User.query.get(user_id)
 
     def __repr__(self):
         return f"<User {self.name} {self.surrname} {self.email} {self.password_hashed}>"

@@ -34,7 +34,7 @@ def get_companies():
         "technology": request.args.get("technology", default=None, type=str),
         "location": request.args.get("location", default=None, type=str),
     }
-    print(params)
+    print(params["industry"])
     try:
         if params["industry"] is not None:
             companies = Company.query.filter_by(industry=params["industry"]).all()
