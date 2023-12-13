@@ -1,9 +1,9 @@
 from flask import jsonify, make_response, request
 from sqlalchemy.exc import IntegrityError
-
+from werkzeug.utils import secure_filename
 from src.companies import bp_companies
 from src.extensions import db
-from src.models.company import Company
+from src.models.company import Company, Logo
 
 
 @bp_companies.route("/api/companies/add", methods=["POST"])
@@ -99,3 +99,21 @@ def update_company(company_id):
     company.description = data["description"]
     db.session.commit()
     return make_response(jsonify({"message": "Company updated!"}), 200)
+
+@bp_companies.route("/api/companies/logo/upload", methods=["POST"])
+def upload_logo():
+    logo = request.files['file']
+    company_id = request.get_json['company_id']
+    if not logo:
+        return make_response(jsonify({"message": "No logo uploaded!"}), 400)
+    filename = secure_filename(logo.filename)
+    mimetype = logo.mimetype
+    logo = Logo(
+        logo=logo.read(),
+        mimetype=mimetype,
+        name=filename,
+        company_id=1,
+    )
+    db.session.add(logo)
+    db.session.commit()
+    return make_response(jsonify({"message": "Logo uploaded!"}), 201)
