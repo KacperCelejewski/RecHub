@@ -22,7 +22,7 @@ class Company(db.Model):
 class Logo(db.Model):
     __tablename__ = "logo"
     id = db.Column(db.Integer, primary_key=True)
-    logo = db.Column(db.String(120), nullable=False)
+    logo = db.Column(db.LargeBinary, nullable=False)
     name = db.Column(db.String(120), nullable=False)
     company_id = db.Column(db.Integer, db.ForeignKey("company.id"), nullable=False)
     mimetype = db.Column(db.String(120), nullable=False)

@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 from src.companies import bp_companies
 from src.extensions import db
 from src.models.company import Company, Logo
-
+import base64
 
 @bp_companies.route("/api/companies/add", methods=["POST"])
 def add_company():
@@ -103,17 +103,38 @@ def update_company(company_id):
 @bp_companies.route("/api/companies/logo/upload", methods=["POST"])
 def upload_logo():
     logo = request.files['file']
-    company_id = request.get_json['company_id']
     if not logo:
         return make_response(jsonify({"message": "No logo uploaded!"}), 400)
     filename = secure_filename(logo.filename)
     mimetype = logo.mimetype
+    company_id = request.form.get('company_id')
+
     logo = Logo(
         logo=logo.read(),
         mimetype=mimetype,
         name=filename,
-        company_id=1,
+        company_id=company_id
     )
     db.session.add(logo)
     db.session.commit()
     return make_response(jsonify({"message": "Logo uploaded!"}), 201)
+
+@bp_companies.route("/api/companies/logo/<int:company_id>", methods=["GET"])
+def get_logo(company_id):
+    Company.query.get_or_404(company_id)
+    logo = Logo.query.filter_by(company_id=company_id).first()
+    if logo is None:
+        return make_response(jsonify({"message": "Logo not found!"}), 404)
+    logo_data_base64 = base64.b64encode(logo.logo).decode('utf-8')
+    return make_response(
+        jsonify(
+            {
+                "logo": {
+                    "logo": logo_data_base64,
+                    "name": logo.name,
+                    "mimetype": logo.mimetype,
+                }
+            }
+        ),
+        200,
+    )
