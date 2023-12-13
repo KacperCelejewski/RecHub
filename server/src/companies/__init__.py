@@ -1,8 +1,8 @@
 from flask import Blueprint
 
-bp_main = Blueprint(
-    "main",
+bp_companies = Blueprint(
+    "companies",
     __name__,
     template_folder="templates",
 )
-from src.main import routes
+from src.companies import routes

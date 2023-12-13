@@ -1,8 +1,8 @@
 from flask import Blueprint
 
-bp_main = Blueprint(
-    "main",
+bp_auth = Blueprint(
+    "auth",
     __name__,
     template_folder="templates",
 )
-from src.main import routes
+from src.auth import routes
