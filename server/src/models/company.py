@@ -1,6 +1,5 @@
 from src.extensions import db
 
-
 class Company(db.Model):
     __tablename__ = "company"
     id = db.Column(db.Integer, primary_key=True)
@@ -29,4 +28,5 @@ class Logo(db.Model):
 
     def __repr__(self) -> str:
         return f"Logo {self.logo}"
+    
 

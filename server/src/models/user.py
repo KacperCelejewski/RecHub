@@ -96,6 +96,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(), unique=True, nullable=False)
     password_hashed = db.Column(db.String(), unique=True, nullable=False)
     opinions = db.relationship("Opinion", backref="author", lazy=True)
+    
 
 
     def __repr__(self):
