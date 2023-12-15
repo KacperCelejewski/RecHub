@@ -24,7 +24,7 @@ def add_company():
         db.session.rollback()
         return make_response(jsonify({"message": "Company already exists!"}), 409)
 
-    return make_response(jsonify({"message": "Company added!"}), 201)
+    return make_response(jsonify({"message": "Company added!",'company_id':company.id}), 201)
 
 
 @bp_companies.route("/api/companies/", methods=["GET"])
@@ -102,7 +102,7 @@ def update_company(company_id):
 
 @bp_companies.route("/api/companies/logo/upload", methods=["POST"])
 def upload_logo():
-    logo = request.files['file']
+    logo = request.files['logo']
     if not logo:
         return make_response(jsonify({"message": "No logo uploaded!"}), 400)
     filename = secure_filename(logo.filename)

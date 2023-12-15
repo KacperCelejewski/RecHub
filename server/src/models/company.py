@@ -15,7 +15,7 @@ class Company(db.Model):
     def __repr__(self) -> str:
         return f"Company {self.name}"
     
-    
+
 class Logo(db.Model):
     __tablename__ = "logo"
     id = db.Column(db.Integer, primary_key=True)
