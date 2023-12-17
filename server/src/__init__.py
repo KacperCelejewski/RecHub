@@ -7,9 +7,11 @@ from src.models.user import User
 from src.models.opinion import Opinion
 from src.models.representative import Representative
 
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    
     bcrypt.init_app(app)
     db.init_app(app)
     jwt.init_app(app)

@@ -16,6 +16,7 @@ def add_company():
         location=data["location"],
         ceo=data["ceo"],
         description=data["description"],
+        website=data["website"],
     )
     try:
         db.session.add(company)
