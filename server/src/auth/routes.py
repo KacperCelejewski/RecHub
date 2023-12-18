@@ -17,7 +17,7 @@ from flask_jwt_extended import (
     unset_jwt_cookies,
     jwt_required,
     get_jwt_identity,
-    jwt_refresh_token_required,
+    
 )
 
 
@@ -95,7 +95,7 @@ def logout():
 
 
 @bp_auth.route("/api/auth/refresh", methods=["POST"])
-@jwt_refresh_token_required()
+@jwt_required(refresh=True)
 def refresh():
     current_user_id = get_jwt_identity()
     new_access_token = create_access_token(identity=current_user_id)
