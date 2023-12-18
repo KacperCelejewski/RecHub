@@ -1,4 +1,4 @@
-# Builder stage
+
 FROM python:3.11-alpine3.19 AS builder
 
 RUN pip install --upgrade pip
@@ -8,7 +8,7 @@ COPY requirements.txt .
 
 
 
-# Runtime stage
+
 FROM python:3.11-slim
 
 WORKDIR /light_app
