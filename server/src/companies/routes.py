@@ -6,6 +6,7 @@ from src.extensions import db
 from src.models.company import Company, Logo
 import base64
 
+
 @bp_companies.route("/api/companies/add", methods=["POST"])
 def add_company():
     data = request.get_json()
@@ -25,7 +26,9 @@ def add_company():
         db.session.rollback()
         return make_response(jsonify({"message": "Company already exists!"}), 409)
 
-    return make_response(jsonify({"message": "Company added!",'company_id':company.id}), 201)
+    return make_response(
+        jsonify({"message": "Company added!", "company_id": company.id}), 201
+    )
 
 
 @bp_companies.route("/api/companies/", methods=["GET"])
@@ -39,7 +42,6 @@ def get_companies():
     try:
         if params["industry"] is not None:
             companies = Company.query.filter_by(industry=params["industry"]).all()
-
 
         elif params["technology"] is not None:
             companies = Company.query.filter_by(technology=params["technology"]).all()
@@ -71,6 +73,7 @@ def get_companies():
 @bp_companies.route("/api/companies/<int:company_id>", methods=["GET"])
 def get_company(company_id):
     company = Company.query.get_or_404(company_id)
+    avg_rating = company.average_rating()
     return make_response(
         jsonify(
             {
@@ -81,6 +84,8 @@ def get_company(company_id):
                     "industry": company.industry,
                     "ceo": company.ceo,
                     "description": company.description,
+                    "website": company.website,
+                    "avg_rating": round(avg_rating, 2),
                 }
             }
         ),
@@ -99,26 +104,26 @@ def update_company(company_id):
     company.ceo = data["ceo"]
     company.description = data["description"]
     db.session.commit()
+
     return make_response(jsonify({"message": "Company updated!"}), 200)
+
 
 @bp_companies.route("/api/companies/logo/upload", methods=["POST"])
 def upload_logo():
-    logo = request.files['logo']
+    logo = request.files["logo"]
     if not logo:
         return make_response(jsonify({"message": "No logo uploaded!"}), 400)
     filename = secure_filename(logo.filename)
     mimetype = logo.mimetype
-    company_id = request.form.get('company_id')
+    company_id = request.form.get("company_id")
 
     logo = Logo(
-        logo=logo.read(),
-        mimetype=mimetype,
-        name=filename,
-        company_id=company_id
+        logo=logo.read(), mimetype=mimetype, name=filename, company_id=company_id
     )
     db.session.add(logo)
     db.session.commit()
     return make_response(jsonify({"message": "Logo uploaded!"}), 201)
+
 
 @bp_companies.route("/api/companies/logo/<int:company_id>", methods=["GET"])
 def get_logo(company_id):
@@ -126,7 +131,19 @@ def get_logo(company_id):
     logo = Logo.query.filter_by(company_id=company_id).first()
     if logo is None:
         return make_response(jsonify({"message": "Logo not found!"}), 404)
-    logo_data_base64 = base64.b64encode(logo.logo).decode('utf-8')
+    if logo.check_mimetype() is False:
+        return make_response(
+            jsonify(
+                {"message": "Invalid mimetype! Only jpeg or png types are available"}
+            ),
+            415,  # Unsupported Media Type
+        )
+    if logo.check_size() is False:
+        return make_response(
+            jsonify({"message": "File too large! Max size is 1MB"}),
+            413,  # Payload Too Large
+        )
+    logo_data_base64 = base64.b64encode(logo.logo).decode("utf-8")
     return make_response(
         jsonify(
             {
