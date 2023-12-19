@@ -1,5 +1,7 @@
 from src.extensions import db
 import os
+from flask import make_response, jsonify
+import io
 
 
 class Company(db.Model):
@@ -20,9 +22,9 @@ class Company(db.Model):
         for opinion in self.opinions:
             sum += opinion.rating
         if len(self.opinions) > 0:
-            return sum / len(self.opinions)
+            return round(sum / len(self.opinions), 2)
         else:
-            return "No ratings yet"
+            return f"No rates for {self.name}!"
 
     def __repr__(self) -> str:
         return f"Company {self.name}"
@@ -43,11 +45,16 @@ class Logo(db.Model):
             return False
 
     def check_size(self):
-        file_size = os.path.getsize(self.logo)
-        if file_size > 1000000:
-            return False
+        if self.logo is not None:
+            byte_io = io.BytesIO(self.logo)
+            file_size = byte_io.seek(0, io.SEEK_END)
+            print(file_size)
+            if file_size > 1000000:
+                return False
+            else:
+                return True
         else:
-            return True
+            return make_response(jsonify({"message": "No logo uploaded!"}), 400)
 
     def __repr__(self) -> str:
         return f"Logo {self.logo}"

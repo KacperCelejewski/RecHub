@@ -85,7 +85,7 @@ def get_company(company_id):
                     "ceo": company.ceo,
                     "description": company.description,
                     "website": company.website,
-                    "avg_rating": round(avg_rating, 2),
+                    "avg_rating": avg_rating,
                 }
             }
         ),
@@ -120,6 +120,19 @@ def upload_logo():
     logo = Logo(
         logo=logo.read(), mimetype=mimetype, name=filename, company_id=company_id
     )
+    if logo.check_mimetype() is False:
+        return make_response(
+            jsonify(
+                {"message": "Invalid mimetype! Only jpeg or png types are available"}
+            ),
+            415,  # Unsupported Media Type
+        )
+    print(logo.check_size())
+    if logo.check_size() is False:
+        return make_response(
+            jsonify({"message": "File too large! Max size is 1MB "}),
+            413,  # Payload Too Lar
+        )
     db.session.add(logo)
     db.session.commit()
     return make_response(jsonify({"message": "Logo uploaded!"}), 201)
@@ -131,18 +144,7 @@ def get_logo(company_id):
     logo = Logo.query.filter_by(company_id=company_id).first()
     if logo is None:
         return make_response(jsonify({"message": "Logo not found!"}), 404)
-    if logo.check_mimetype() is False:
-        return make_response(
-            jsonify(
-                {"message": "Invalid mimetype! Only jpeg or png types are available"}
-            ),
-            415,  # Unsupported Media Type
-        )
-    if logo.check_size() is False:
-        return make_response(
-            jsonify({"message": "File too large! Max size is 1MB"}),
-            413,  # Payload Too Large
-        )
+
     logo_data_base64 = base64.b64encode(logo.logo).decode("utf-8")
     return make_response(
         jsonify(
