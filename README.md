@@ -9,7 +9,7 @@ RecommendationHub is a user-friendly web application that empowers users to sear
 - Docker
 - Docker - Compose
 - PyTest - Unit Testing
-- Vue.js for Frontend i another repository (RecHub - Frontend) -> Multirepo solution
+- Vue.js for Frontend in another repository (RecHub - Frontend) -> Multirepo solution
 
 ## Getting Started
 
