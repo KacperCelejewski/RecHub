@@ -37,3 +37,13 @@ def add_representative():
         )
 
     return make_response(jsonify({"message": "Representative added!"}), 201)
+
+
+@bp_representatives.route("/api/representatives/delete", methods=["DELETE"])
+@jwt_required()
+def delete_representative():
+    current_user = User.query.filter_by(id=get_jwt_identity()).first()
+    representative = Representative.query.filter_by(user_id=current_user.id).first()
+    db.session.delete(representative)
+    db.session.commit()
+    return make_response(jsonify({"message": "Representative deleted!"}), 200)
