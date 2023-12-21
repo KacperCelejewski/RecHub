@@ -5,6 +5,8 @@ from src.companies import bp_companies
 from src.extensions import db
 from src.models.company import Company, Logo
 import base64
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from src.models.representative import Representative
 
 
 @bp_companies.route("/api/companies/add", methods=["POST"])
@@ -106,6 +108,44 @@ def update_company(company_id):
     db.session.commit()
 
     return make_response(jsonify({"message": "Company updated!"}), 200)
+
+
+@bp_companies.route("/api/companies/edit/<int:company_id>", methods=["PUT"])
+@jwt_required()
+def edit_company(company_id):
+    company = Company.query.get_or_404(company_id)
+    representative = Representative.query.filter_by(company_id=company_id).first()
+    if representative is None:
+        return make_response(jsonify({"message": "You are not a representative!"}), 401)
+    current_user_id = get_jwt_identity()
+    if current_user_id != representative.user_id:
+        return make_response(jsonify({"message": "You are not a representative!"}), 401)
+    data = request.get_json()
+    company.name = data["name"]
+    company.industry = data["industry"]
+    company.technology = data["technology"]
+    company.location = data["location"]
+    company.ceo = data["ceo"]
+    company.description = data["description"]
+    company.website = data["website"]
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Company updated!"}), 200)
+
+
+@bp_companies.route("/api/companies/delete/<int:company_id>", methods=["DELETE"])
+@jwt_required()
+def delete_company(company_id):
+    company = Company.query.get_or_404(company_id)
+    representative = Representative.query.filter_by(company_id=company_id).first()
+    if representative is None:
+        return make_response(jsonify({"message": "You are not a representative!"}), 401)
+    current_user_id = get_jwt_identity()
+    if current_user_id != representative.user_id:
+        return make_response(jsonify({"message": "You are not a representative!"}), 401)
+    db.session.delete(company)
+    db.session.commit()
+    return make_response(jsonify({"message": "Company deleted!"}), 200)
 
 
 @bp_companies.route("/api/companies/logo/upload", methods=["POST"])
