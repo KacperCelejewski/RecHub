@@ -137,12 +137,17 @@ def edit_company(company_id):
 @jwt_required()
 def delete_company(company_id):
     company = Company.query.get_or_404(company_id)
-    representative = Representative.query.filter_by(company_id=company_id).first()
-    if representative is None:
-        return make_response(jsonify({"message": "You are not a representative!"}), 401)
     current_user_id = get_jwt_identity()
-    if current_user_id != representative.user_id:
-        return make_response(jsonify({"message": "You are not a representative!"}), 401)
+    representatives = Representative.query.filter_by(company_id=company_id)
+    for representative in representatives:
+        if representative is None:
+            return make_response(
+                jsonify({"message": "You are not a representative!"}), 401
+            )
+        if current_user_id != representative.user_id:
+            return make_response(
+                jsonify({"message": "You are not a representative!"}), 401
+            )
     db.session.delete(company)
     db.session.commit()
     return make_response(jsonify({"message": "Company deleted!"}), 200)
