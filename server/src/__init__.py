@@ -6,6 +6,7 @@ from src.models.company import Company
 from src.models.user import User
 from src.models.opinion import Opinion
 from src.models.representative import Representative
+from src.models.mailing_list import MailingList
 
 
 def create_app(config_class=Config):
@@ -26,6 +27,7 @@ def create_app(config_class=Config):
     from src.opinions import bp_opinion as opinion_bp
     from src.representative import bp_representatives as representative_bp
     from src.newsletter import bp_newsletter as newsletter_bp
+    from src.notifications import bp_notifications as notifications_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(company_bp)
@@ -33,6 +35,7 @@ def create_app(config_class=Config):
     app.register_blueprint(opinion_bp)
     app.register_blueprint(representative_bp)
     app.register_blueprint(newsletter_bp)
+    app.register_blueprint(notifications_bp)
     CORS(app, resources={r"/*": {"origins": "*"}})
 
     return app
