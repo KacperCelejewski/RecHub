@@ -38,6 +38,8 @@ def add_opinion():
         content=data["content"],
         posted_date=datetime.datetime.now(),
     )
+    opinion.censor_profanity()
+    
     try:
         db.session.add(opinion)
         db.session.commit()
