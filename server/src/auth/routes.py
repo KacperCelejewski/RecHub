@@ -17,7 +17,6 @@ from flask_jwt_extended import (
     unset_jwt_cookies,
     jwt_required,
     get_jwt_identity,
-    
 )
 
 
@@ -86,8 +85,17 @@ def login():
     )
 
 
-@bp_auth.route("/api/auth/logout", methods=["GET"])
-@jwt_required
+@bp_auth.route("/api/auth/check-token-status", methods=["POST"])
+@jwt_required()
+def check_token_status():
+    if get_jwt_identity():
+        return make_response(jsonify({"message": "Token is valid!"}), 200)
+    else:
+        return make_response(jsonify({"message": "Token is invalid!"}), 401)
+
+
+@bp_auth.route("/api/auth/logout", methods=["POST"])
+@jwt_required()
 def logout():
     response = jsonify()
     unset_jwt_cookies(response)

@@ -10,6 +10,12 @@ services:
       - postgres
     networks:
       - app-db-network
+    environment:
+      - SECRET_KEY=${SECRET_KEY},
+      - FLASK_ENV=${FLASK_ENV},
+      - FLASK_DEBUG = ${FLASK_DEBUG},
+      - JWT_SECRET_KEY = ${JWT_SECRET_KEY},
+
   postgres:
     image: postgres:latest
     container_name: postgres
