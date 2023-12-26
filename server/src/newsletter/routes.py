@@ -46,6 +46,7 @@ def subscribe():
             jsonify({"message": "Something went wrong!", "error": e}), 400
         )
 
+
 @bp.route("/api/newsletter/unsubscribe", methods=["POST"])
 def unsubscribe():
     """
@@ -62,7 +63,6 @@ def unsubscribe():
         return make_response(jsonify({"message": "Email cannot be empty!"}), 400)
     MailingList.remove_email_adress(email)
     make_response(jsonify({"message": "Unsubscribed!"}), 200)
-
 
 
 # TODO: Add admin role requirement
@@ -110,5 +110,3 @@ def get_subscribers():
         for subscriber in subscribers
     ]
     return make_response(jsonify({"subscribers": subscribers}), 200)
-
-@
