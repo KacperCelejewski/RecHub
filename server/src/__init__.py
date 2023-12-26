@@ -10,15 +10,15 @@ from src.models.mailing_list import MailingList
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
-    app.config.from_object(config_class)
+    application = Flask(__name__)
+    application.config.from_object(config_class)
 
-    bcrypt.init_app(app)
-    db.init_app(app)
-    jwt.init_app(app)
-    mail.init_app(app)
+    bcrypt.init_app(application)
+    db.init_app(application)
+    jwt.init_app(application)
+    mail.init_app(application)
 
-    with app.app_context():
+    with application.app_context():
         db.create_all()
 
     from src.companies import bp_companies as company_bp
@@ -28,13 +28,13 @@ def create_app(config_class=Config):
     from src.representative import bp_representatives as representative_bp
     from src.newsletter import bp_newsletter as newsletter_bp
 
-    app.register_blueprint(main_bp)
-    app.register_blueprint(company_bp)
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(opinion_bp)
-    app.register_blueprint(representative_bp)
-    app.register_blueprint(newsletter_bp)
+    application.register_blueprint(main_bp)
+    application.register_blueprint(company_bp)
+    application.register_blueprint(auth_bp)
+    application.register_blueprint(opinion_bp)
+    application.register_blueprint(representative_bp)
+    application.register_blueprint(newsletter_bp)
 
-    CORS(app, resources={r"/*": {"origins": "*"}})
+    CORS(application, resources={r"/*": {"origins": "*"}})
 
-    return app
+    return application
