@@ -8,15 +8,18 @@ from src.models.user import (
     Password,
     Email,
 )
+from src.db_func import add_to_db
 
 
-class Register :
+class Register:
     """
     Class representing the registration process for a user.
     """
 
     def __init__(self, user: User):
         self.user = user
+        self.user.email = Email(self.user.email)
+        self.user.password = Password(self.user.password_hashed)
 
     def check_email_password_correcctness(self):
         """
@@ -26,18 +29,11 @@ class Register :
         try:
             is_valid_email = self.user.email.is_valid()
             is_valid_password = self.user.password.is_valid()
-        except EmailNotValidError as e:
-            return make_response(
-                jsonify({"message": "Invalid email!", "error": str({e})}), 400
-            )
-        except PasswordNotValidError as e:
-            return make_response(
-                jsonify({"message": "Invalid password!", "error": str({e})}), 400
-            )
+        except EmailNotValidError as:
+        except PasswordNotValidError as :
+            raise PasswordNotValidError("Password is not valid!")
         if not is_valid_email or not is_valid_password:
-            return make_response(
-                jsonify({"message": "Invalid email or password!"}), 400
-            )
+            raise ValueError("Email or password is not valid!")
 
     def check_whether_user_exists(self):
         """
@@ -45,13 +41,13 @@ class Register :
         If a user with the same email exists, it returns an error response.
         """
         try:
-            if User.query.filter_by(email=self.user.email).first() is not None:
-                return make_response(jsonify({"message": "User already exists!"}), 409)
+            if User.query.filter_by(email=self.user.email.email).first() is not None:
+                raise ValueError("User already exists!")
         except IntegrityError:
             db.session.rollback()
-            return make_response(jsonify({"message": "User not created!"}), 400)
+            raise ValueError("User already exists!")
 
-    def register_user(self, username, email: Email, password: Password):
+    def register_user(self) -> Response:
         """
         Registers a new user by performing email and password correctness checks,
         checking whether the user already exists, and adding the user to the database.
@@ -59,9 +55,8 @@ class Register :
         """
         self.check_email_password_correcctness()
         self.check_whether_user_exists()
-
-        return add_to_db(
+        self.user.email = self.user.email.email
+        response = add_to_db(
             self.user,
-            f"User {username} created!",
-            f"User {username} not created!",
         )
+        return response
