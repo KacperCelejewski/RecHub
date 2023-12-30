@@ -1,11 +1,12 @@
 from flask import jsonify, make_response, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
-from src.representative import bp_representatives
+
 from src.extensions import db
 from src.models.representative import Representative
 from src.models.user import User
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from src.representative import bp_representatives
 
 
 @bp_representatives.route("/api/representatives/add", methods=["POST"])

@@ -1,6 +1,5 @@
 import pickle
 
-from src.db_func import add_to_db
 from email_validator import EmailNotValidError
 from flask import jsonify, make_response, request, session
 from flask_jwt_extended import (
@@ -13,18 +12,20 @@ from flask_jwt_extended import (
     unset_jwt_cookies,
 )
 from sqlalchemy.exc import IntegrityError
+
 from src.auth import bp_auth
+from src.auth.register import Register, UserAlreadyExistsError
 from src.extensions import db
 from src.models.user import Email, Password, PasswordNotValidError, User
-from src.auth.register import Register
+from src.utils import add_to_db, check_missing_data
 
 
 @bp_auth.route("/api/auth/register", methods=["POST"])
 def register():
     data = request.get_json()
-    for key in data:
-        if key is None or not data[key]:
-            return make_response(jsonify({"message": f"Missing {key} parameter!"}), 409)
+    is_missing, key = check_missing_data(data)
+    if is_missing:
+        return make_response(jsonify({"message": f"Missing {key} parameter"}), 400)
 
     user_to_register = User(
         name=data["name"],
@@ -34,16 +35,16 @@ def register():
     )
     register_instance = Register(user_to_register)
     try:
-        response = register_instance.register_user()
+        result_of_user_register = register_instance.register_user()
     except EmailNotValidError:
         return make_response(jsonify({"message": "Email is not valid!"}), 400)
     except PasswordNotValidError:
         return make_response(jsonify({"message": "Password is not valid!"}), 400)
-    except ValueError as e:
-        return make_response(jsonify({"message": str(e)}), 400)
+    except UserAlreadyExistsError:
+        return make_response(jsonify({"message": "User already exists!"}), 400)
 
-    if response is False:
-        return make_response(jsonify({"message": "User not created!"}), 400)
+    if result_of_user_register is False:
+        return make_response(jsonify({"message": "User not created!"}), 409)
     else:
         return make_response(jsonify({"message": "User created!"}), 201)
 

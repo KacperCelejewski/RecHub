@@ -1,10 +1,12 @@
+import os
+
 import pytest
 from flask import Flask
-from src import create_app
+from flask_login import current_user, login_required, login_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
+
+from src import create_app
 from src.extensions import db
-import os
-from flask_login import login_user, logout_user, current_user, login_required
 from src.models.user import User
 
 

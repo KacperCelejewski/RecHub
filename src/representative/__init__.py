@@ -1,4 +1,5 @@
 from flask import Blueprint
+
 bp_representatives = Blueprint(
     "representatives",
     __name__,

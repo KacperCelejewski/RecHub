@@ -1,7 +1,8 @@
-from src.extensions import bcrypt
-from src.extensions import db
-from email_validator import validate_email, EmailNotValidError
+from email_validator import EmailNotValidError, validate_email
 from flask_login import UserMixin
+
+from src.error_classes import PasswordNotValidError
+from src.extensions import bcrypt, db
 
 
 class Email:
@@ -40,10 +41,6 @@ class Email:
 
     def __str__(self) -> str:
         return f"{self.email}"
-
-
-class PasswordNotValidError(Exception):
-    pass
 
 
 class Password:
@@ -198,4 +195,4 @@ class User(db.Model, UserMixin):
     representative = db.relationship("Representative", backref="user", lazy=True)
 
     def __repr__(self):
-        return f"<User {self.name} {self.surrname} {self.email} {self.password_hashed}>"
+        return f"<User {self.name} {self.surrname} {self.email}>"

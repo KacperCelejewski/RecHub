@@ -1,5 +1,6 @@
-from src.extensions import db
 from better_profanity import profanity
+
+from src.extensions import db
 
 
 class Opinion(db.Model):

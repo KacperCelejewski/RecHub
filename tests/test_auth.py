@@ -1,11 +1,13 @@
 import pytest
-from src.models.user import PasswordNotValidError
 from email_validator import EmailNotValidError
+
+from src.models.user import PasswordNotValidError
 
 
 def test_should_return_201_when_user_is_registered(client):
-    from src.models.user import Password
     import pickle
+
+    from src.models.user import Password
 
     response = client.post(
         "/api/auth/register",
