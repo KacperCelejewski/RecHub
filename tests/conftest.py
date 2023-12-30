@@ -2,17 +2,17 @@ import os
 
 import pytest
 from flask import Flask
-from flask_login import current_user, login_required, login_user, logout_user
+
 from flask_sqlalchemy import SQLAlchemy
 
 from src import create_app
 from src.extensions import db
 from src.models.user import User
+from application import app
 
 
 @pytest.fixture
 def app():
-    app = create_app()
     app.config["TESTING"] = True
     app.config["SECRET_KEY"] = "TEST_SECRET_KEY"
     with app.app_context():
