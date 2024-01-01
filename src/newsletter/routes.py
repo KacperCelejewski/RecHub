@@ -1,15 +1,16 @@
-from flask import jsonify, make_response, request
-from flask_login import login_required, current_user
-from src.models.opinion import Opinion
-from src.models.company import Company
-from src.extensions import db
-from sqlalchemy.exc import IntegrityError
-from src.newsletter import bp_newsletter as bp
 from mailbox import Message
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from src.extensions import mail
-from src.models.user import User
+
+from flask import jsonify, make_response, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_login import current_user, login_required
+from sqlalchemy.exc import IntegrityError
+
+from src.extensions import db, mail
+from src.models.company import Company
 from src.models.mailing_list import MailingList
+from src.models.opinion import Opinion
+from src.models.user import User
+from src.newsletter import bp_newsletter as bp
 
 
 @bp.route("/api/newsletter/subscribe", methods=["POST"])

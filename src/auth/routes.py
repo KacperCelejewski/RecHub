@@ -1,63 +1,55 @@
-from flask import jsonify, make_response, request, session
-from sqlalchemy.exc import IntegrityError
-
-from src.auth import bp_auth
-from src.extensions import db
-from src.models.user import User, Password, Email
 import pickle
+
 from email_validator import EmailNotValidError
-from src.models.user import PasswordNotValidError
+from flask import jsonify, make_response, request, session
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
+    get_jwt_identity,
+    jwt_required,
     set_access_cookies,
     set_refresh_cookies,
-)
-from flask_jwt_extended import (
     unset_jwt_cookies,
-    jwt_required,
-    get_jwt_identity,
 )
+from sqlalchemy.exc import IntegrityError
+
+from src.auth import bp_auth
+from src.auth.register import Register, UserAlreadyExistsError
+from src.extensions import db
+from src.models.user import Email, Password, PasswordNotValidError, User
+from src.utils import add_to_db, check_missing_data
 
 
 @bp_auth.route("/api/auth/register", methods=["POST"])
 def register():
     data = request.get_json()
-    for key in data:
-        if key is None or data[key] == "":
-            return make_response(jsonify({"message": f"Missing {key} parameter!"}), 400)
-    password = Password(data["password"])
-    email = Email(data["email"])
+    is_missing, key = check_missing_data(data)
+    if is_missing:
+        return make_response(jsonify({"message": f"Missing {key} parameter"}), 400)
+
+    user_to_register = User(
+        name=data["name"],
+        email=data["email"],
+        password_hashed=data["password"],
+        surrname=data["surrname"],
+    )
+    register_instance = Register(user_to_register)
     try:
-        is_valid_email = email.is_valid()
-        is_valid_password = password.is_valid()
-    except EmailNotValidError as e:
+        result_of_user_register = register_instance.register_user()
+    except EmailNotValidError:
         return make_response(
-            jsonify({"message": "Invalid email!", "error": str({e})}), 400
+            jsonify({"message": "Email is not valid!", "error": EmailNotValidError}),
+            400,
         )
-    except PasswordNotValidError as e:
-        return make_response(
-            jsonify({"message": "Invalid password!", "error": str({e})}), 400
-        )
-    if is_valid_email and is_valid_password:
-        if User.query.filter_by(email=email.email).first() is not None:
-            return make_response(jsonify({"message": "User already exists!"}), 409)
-        user = User(
-            name=data["name"],
-            surrname=data["surrname"],
-            email=email.email,
-            password_hashed=password.hash(),
-        )
-        try:
-            db.session.add(user)
-            db.session.commit()
-        except IntegrityError:
-            db.session.rollback()
-            print(user)
-            return make_response(jsonify({"message": "User already exists!"}), 409)
-        return make_response(jsonify({"message": "User registered!"}), 201)
+    except PasswordNotValidError:
+        return make_response(jsonify({"message": "Password is not valid!"}), 400)
+    except UserAlreadyExistsError:
+        return make_response(jsonify({"message": "User already exists!"}), 400)
+
+    if result_of_user_register is False:
+        return make_response(jsonify({"message": "User not created!"}), 409)
     else:
-        return make_response(jsonify({"message": "Invalid email or password!"}), 400)
+        return make_response(jsonify({"message": "User created!"}), 201)
 
 
 @bp_auth.route("/api/auth/login", methods=["POST"])

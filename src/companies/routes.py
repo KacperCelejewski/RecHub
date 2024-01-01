@@ -1,11 +1,13 @@
+import base64
+
 from flask import jsonify, make_response, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
+
 from src.companies import bp_companies
 from src.extensions import db
 from src.models.company import Company, Logo
-import base64
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.models.representative import Representative
 
 

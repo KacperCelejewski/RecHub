@@ -1,5 +1,4 @@
-from src.extensions import db
-from src.extensions import mail
+from src.extensions import db, mail
 
 
 class MailingList(db.Model):

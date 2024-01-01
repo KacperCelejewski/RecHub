@@ -1,7 +1,9 @@
-from src.extensions import db
-import os
-from flask import make_response, jsonify
 import io
+import os
+
+from flask import jsonify, make_response
+
+from src.extensions import db
 
 
 class Company(db.Model):
