@@ -31,14 +31,15 @@ class Register:
         """
 
         try:
-            is_valid_email = self.user.email.is_valid()
-            is_valid_password = self.user.password.is_valid()
+            self.user.email.is_valid()
+            self.user.password.is_valid()
+
         except EmailNotValidError:
             raise EmailNotValidError("Email is not valid!")
         except PasswordNotValidError:
             raise PasswordNotValidError("Password is not valid!")
-        if not is_valid_email or not is_valid_password:
-            raise ValueError("Email or password is not valid!")
+        else:
+            return True
 
     @LogMethod
     def check_whether_user_exists(self):

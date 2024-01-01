@@ -37,7 +37,10 @@ def register():
     try:
         result_of_user_register = register_instance.register_user()
     except EmailNotValidError:
-        return make_response(jsonify({"message": "Email is not valid!"}), 400)
+        return make_response(
+            jsonify({"message": "Email is not valid!", "error": EmailNotValidError}),
+            400,
+        )
     except PasswordNotValidError:
         return make_response(jsonify({"message": "Password is not valid!"}), 400)
     except UserAlreadyExistsError:

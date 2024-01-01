@@ -59,4 +59,4 @@ def check_missing_data(data) -> bool or tuple:
     for key in data:
         if key is None or not data[key]:
             return True, key
-    return False
+    return False, None
