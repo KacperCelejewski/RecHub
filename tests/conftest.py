@@ -27,38 +27,51 @@ def client(app_mock):
     return app_mock.test_client()
 
 
-# @pytest.fixture
-# def register_user(client):
-#     user_data = {
-#         "name": "John",
-#         "surrname": "Doe",
-#         "email": "johndoe@gmail.com",
-#         "password": "Sam222ssple123!",
-#     }
-
-#     response = client.post("/api/auth/register", json=user_data)
-
-#     assert response.json == {"message": "User registered!"}
-#     assert response.status_code == 201
-
-#     return user_data
+@pytest.fixture
+def create_user():
+    """
+    Fixture that creates a user with a given email and password.
+    """
+    user = User(
+        name="John",
+        surrname="Doe",
+        email="sample@gmail.com",
+        password_hashed="Sam222ssple123!",
+    )
+    return user
 
 
-# @pytest.fixture
-# def logged_in_user(client, register_user):
-#     register_user = register_user
+@pytest.mark.parametrize("email, password", [("sample@gmail.com", "Sam222ssple123!")])
+@pytest.fixture
+def register_user(client, create_user):
+    """
+    Fixture that registers a user.
+    """
+    create_user = create_user
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "name": create_user.name,
+            "surrname": create_user.surrname,
+            "email": create_user.email,
+            "password": create_user.password_hashed,
+        },
+    )
+    return response
 
-#     login_data = {
-#         "email": register_user["email"],
-#         "password": register_user["password"],
-#     }
-#     response = client.post("/api/auth/login", json=login_data)
 
-#     assert response.status_code == 200
+@pytest.fixture
+def logged_in_user(client, register_user):
+    """
+    Fixture that logs in a user.
+    """
+    register_user = register_user
 
-#     user = User.query.filter_by(email=register_user["email"]).first()
-
-#     yield user
-
-#     db.session.delete(user)
-#     db.session.commit()
+    response = client.post(
+        "/api/auth/login",
+        json={
+            "email": "sample@gmail.com",
+            "password": "Sam222ssple123!",
+        },
+    )
+    return response

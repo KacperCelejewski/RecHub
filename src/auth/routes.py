@@ -111,6 +111,7 @@ def login():
 
 
 @bp_auth.route("/api/auth/check-token-status", methods=["POST"])
+@jwt_required()
 def check_token_status():
     """
     Check the status of the token.
@@ -118,10 +119,7 @@ def check_token_status():
     Returns:
         A response with a message indicating whether the token is valid or invalid.
     """
-    if get_jwt_identity():
-        return make_response(jsonify({"message": "Token is valid!"}), 200)
-    else:
-        return make_response(jsonify({"message": "Token is invalid!"}), 401)
+    return make_response(jsonify({"message": "Token is valid!"}), 200)
 
 
 @bp_auth.route("/api/auth/logout", methods=["POST"])
