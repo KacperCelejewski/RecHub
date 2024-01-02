@@ -1,6 +1,6 @@
-# RecHub
+# RecHub - [![Flask](https://github.com/KacperCelejewski/RecHub/actions/workflows/flask.yml/badge.svg)](https://github.com/KacperCelejewski/RecHub/actions/workflows/flask.yml)
 
-RecommendationHub is a user-friendly web application that empowers users to search for their future employees or companies. It provides a platform where users can not only find potential candidates or organizations, but also read and share valuable opinions and recommendations from each other. This fosters a collaborative environment where users can make informed decisions based on real experiences and insights.
+RecHub is a user-friendly web application that empowers users to search for their future employees or companies. It provides a platform where users can not only find potential candidates or organizations, but also read and share valuable opinions and recommendations from each other. This fosters a collaborative environment where users can make informed decisions based on real experiences and insights.
 
 ## Technologies Used
 
