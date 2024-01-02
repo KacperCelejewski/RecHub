@@ -145,13 +145,24 @@ def refresh():
     Returns:
         A response object with the new access token and refresh token.
     """
+
     current_user_id = get_jwt_identity()
     new_access_token = create_access_token(identity=current_user_id)
     new_refresh_token = create_refresh_token(identity=current_user_id)
     response = jsonify(
-        {"access_token": new_access_token, "refresh_token": new_refresh_token}
+        {
+            "access_token": new_access_token,
+            "refresh_token": new_refresh_token,
+            "message": "Token refreshed!",
+        }
     )
     set_access_cookies(response, new_access_token)
     set_refresh_cookies(response, new_refresh_token)
 
     return make_response(response, 200)
+
+
+# TODO: Add password reset functionality
+# TODO: Add email verification functionality
+# TODO: Add password change functionality
+# TODO: Add email change functionality
