@@ -1,6 +1,8 @@
 import json
-from flask import url_for
+
 import pytest
+from flask import url_for
+
 from src.models.user import User
 
 

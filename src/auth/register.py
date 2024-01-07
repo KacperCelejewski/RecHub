@@ -3,13 +3,8 @@ from sqlalchemy.exc import IntegrityError
 
 from src.error_classes import UserAlreadyExistsError
 from src.extensions import db
-from src.models.user import (
-    Email,
-    EmailNotValidError,
-    Password,
-    PasswordNotValidError,
-    User,
-)
+from src.models.user import (Email, EmailNotValidError, Password,
+                             PasswordNotValidError, User)
 from src.utils import LogMethod, add_to_db
 
 

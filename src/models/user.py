@@ -1,3 +1,6 @@
+import random
+import string
+
 from email_validator import EmailNotValidError, validate_email
 from flask_login import UserMixin
 
@@ -43,6 +46,38 @@ class Email:
         return f"{self.email}"
 
 
+
+
+
+class User(db.Model, UserMixin):
+    """
+    Represents a user in the system.
+
+    Attributes:
+        id (int): The unique identifier for the user.
+        name (str): The user's name.
+        surrname (str): The user's surname.
+        email (str): The user's email address.
+        password_hashed (str): The hashed password for the user.
+        opinions (list): A list of opinions written by the user.
+        representative (list): A list of representatives associated with the user.
+    """
+
+    __tablename__ = "user"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    surrname = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(), unique=True, nullable=False)
+    token = db.Column(db.String(), unique=True, nullable=True)
+    password_hashed = db.Column(db.String(), unique=True, nullable=False)
+    opinions = db.relationship("Opinion", backref="author", lazy=True)
+
+    representative = db.relationship("Representative", backref="user", lazy=True)
+
+    def __repr__(self):
+        return f"<User {self.name} {self.surrname} {self.email}>"
+
+
 class Password:
     """
     Represents a password object with validation and hashing functionality.
@@ -52,6 +87,23 @@ class Password:
         self.password = password
 
     special_characters = "!@#$%^&*()-+?_=,<>/"
+
+    @staticmethod
+    def generate_password():
+        """
+        Generates a random password.
+
+        Returns:
+            str: The generated password.
+        """
+        for number_of_characters in range(16):
+            password = "".join(
+                random.choice(
+                    string.ascii_letters + string.digits + "!@#$%^&*()-+?_=,<>/"
+                )
+                for _ in range(number_of_characters)
+            )
+        return password
 
     def is_valid_length(self):
         """
@@ -157,6 +209,21 @@ class Password:
         return self._password_hash
 
     @staticmethod
+    def change_password(user: User, password_from_client):
+        """
+        Change the password for a user.
+
+        Returns:
+            A response object with a message indicating whether the password was changed or not.
+        """
+        try:
+            Password(password_from_client).is_valid()
+        except PasswordNotValidError:
+            raise PasswordNotValidError("Password is not valid!")
+        password = Password(password_from_client)
+        user.password_hashed = password.hash()
+
+    @staticmethod
     def check_corectness(plain_password: str, password_hashed) -> bool:
         """
         Check the correctness of a plain password against a hashed password.
@@ -169,30 +236,3 @@ class Password:
             bool: True if the plain password matches the hashed password, False otherwise.
         """
         return bcrypt.check_password_hash(password_hashed, plain_password)
-
-
-class User(db.Model, UserMixin):
-    """
-    Represents a user in the system.
-
-    Attributes:
-        id (int): The unique identifier for the user.
-        name (str): The user's name.
-        surrname (str): The user's surname.
-        email (str): The user's email address.
-        password_hashed (str): The hashed password for the user.
-        opinions (list): A list of opinions written by the user.
-        representative (list): A list of representatives associated with the user.
-    """
-
-    __tablename__ = "user"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
-    surrname = db.Column(db.String(80), nullable=False)
-    email = db.Column(db.String(), unique=True, nullable=False)
-    password_hashed = db.Column(db.String(), unique=True, nullable=False)
-    opinions = db.relationship("Opinion", backref="author", lazy=True)
-    representative = db.relationship("Representative", backref="user", lazy=True)
-
-    def __repr__(self):
-        return f"<User {self.name} {self.surrname} {self.email}>"
