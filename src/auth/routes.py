@@ -1,24 +1,22 @@
 import pickle
+import secrets
+from datetime import datetime, timedelta
 
 from email_validator import EmailNotValidError
-from flask import jsonify, make_response, request, session
-from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    get_jwt_identity,
-    jwt_required,
-    set_access_cookies,
-    set_refresh_cookies,
-    unset_jwt_cookies,
-)
+from flask import jsonify, make_response, request, url_for
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                get_jwt_identity, jwt_required,
+                                set_access_cookies, set_refresh_cookies,
+                                unset_jwt_cookies)
+from flask_mail import Message
 from sqlalchemy.exc import IntegrityError
 
 from src.auth import bp_auth
 from src.auth.register import Register, UserAlreadyExistsError
-from src.extensions import db
+from src.extensions import db, mail
 from src.models.user import Email, Password, PasswordNotValidError, User
 from src.utils import add_to_db, check_missing_data
-
+import os
 
 @bp_auth.route("/api/auth/register", methods=["POST"])
 def register():
@@ -166,3 +164,48 @@ def refresh():
 # TODO: Add email verification functionality
 # TODO: Add password change functionality
 # TODO: Add email change functionality
+
+
+def generate_reset_token():
+    return secrets.token_urlsafe(32)
+
+
+@bp_auth.route("/api/auth/reset-password", methods=["POST"])
+def create_token():
+    data = request.get_json()
+    email = data["email"]
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        return make_response(jsonify({"message": "User not found!"}), 404)
+    reset_token = generate_reset_token()
+    user.token = reset_token
+    db.session.commit()
+    subject = "Reset Password Request"
+    frontend_url = os.getenv("FRONTEND_URL")
+    reset_url = f'{frontend_url}/reset-password/{reset_token}'
+    body = f"To reset your password, click the following link: {reset_url}"
+
+    msg = Message(
+        subject, sender="noreply@rechub.com", recipients=[user.email], body=body
+    )
+    mail.send(msg)
+    return make_response(jsonify({"message": "Token created!"}), 200)
+
+
+@bp_auth.route("/api/auth/reset-password/<token>", methods=["POST"])
+def reset_password(token):
+    """
+    Reset the password for a user.
+
+    Returns:
+        A response object with a message indicating whether the password was reset or not.
+    """
+    if not token or token == "null":
+        return make_response(jsonify({"message": "Token is missing!"}), 400)
+    user = User.query.filter_by(token=token).first()
+    if user is None:
+        return make_response(jsonify({"message": "user with given token does not exist"}), 404)
+    Password.change_password(user, request.get_json()["password"])
+    user.token = None
+    db.session.commit()
+    return make_response(jsonify({"message": "Password changed!"}), 200)

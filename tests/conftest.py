@@ -2,13 +2,11 @@ import os
 
 import pytest
 from flask import Flask
-
 from flask_sqlalchemy import SQLAlchemy
 
-
+from application import application as app
 from src.extensions import db
 from src.models.user import User
-from application import application as app
 
 
 @pytest.fixture
