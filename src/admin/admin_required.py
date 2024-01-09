@@ -17,3 +17,9 @@ def admin_required():
         return decorator
 
     return wrapper
+
+
+# check if user can be admin
+def check_admin(data):
+    if data["is_administrator"]:
+        return True

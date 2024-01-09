@@ -67,8 +67,8 @@ def unsubscribe():
     make_response(jsonify({"message": "Unsubscribed!"}), 200)
 
 
-@admin_required()
 @bp.route("/api/newsletter/send", methods=["POST"])
+@admin_required()
 def send_newsletter():
     """
     Sends a newsletter to all subscribers.
