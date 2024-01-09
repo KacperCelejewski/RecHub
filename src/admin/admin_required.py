@@ -21,5 +21,8 @@ def admin_required():
 
 # check if user can be admin
 def check_admin(data):
-    if data["is_administrator"]:
-        return True
+    try
+        if data["is_administrator"]:
+            return True
+    except KeyError:
+        return False
