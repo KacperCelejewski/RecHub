@@ -11,6 +11,7 @@ from src.models.mailing_list import MailingList
 from src.models.opinion import Opinion
 from src.models.user import User
 from src.newsletter import bp_newsletter as bp
+from src.admin.admin_required import admin_required
 
 
 @bp.route("/api/newsletter/subscribe", methods=["POST"])
@@ -66,8 +67,8 @@ def unsubscribe():
     make_response(jsonify({"message": "Unsubscribed!"}), 200)
 
 
-# TODO: Add admin role requirement
 @bp.route("/api/newsletter/send", methods=["POST"])
+@admin_required()
 def send_newsletter():
     """
     Sends a newsletter to all subscribers.
@@ -85,7 +86,7 @@ def send_newsletter():
     if body == "":
         return make_response(jsonify({"message": "Body cannot be empty!"}), 400)
     MailingList.send_email(subject, body)
-    make_response(jsonify({"message": "Newsletter sent!"}), 200)
+    return make_response(jsonify({"message": "Newsletter sent!"}), 200)
 
 
 # TODO: Add admin role requirement

@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
+
 from src.extensions import db
 
 

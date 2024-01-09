@@ -62,11 +62,11 @@ class MailingList(db.Model):
         Returns:
             MailingList: The updated subscriber object.
         """
-        subscribers = (MailingList.query.filter_by(is_subscribed=True).all(),)
-        recepients = [subscriber.email for subscriber in subscribers]
+        subscribers = MailingList.query.filter_by(is_subscribed=True).all()
+        recipients = [subscriber.email for subscriber in subscribers]
         mail.send_message(
             subject,
-            sender=MailingList.sender,
+            sender="noreply@rwechub.com",
             body=body,
-            recepients=recepients,
+            recipients=["noreply@rwechub.com"],
         )

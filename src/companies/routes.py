@@ -9,11 +9,16 @@ from src.companies import bp_companies
 from src.extensions import db
 from src.models.company import Company, Logo
 from src.models.representative import Representative
+from src.utils import check_missing_data
 
 
 @bp_companies.route("/api/companies/add", methods=["POST"])
 def add_company():
     data = request.get_json()
+    is_missing, key = check_missing_data(data)
+    if is_missing:
+        return make_response(jsonify({"message": f"Missing {key} parameter"}), 400)
+
     company = Company(
         name=data["name"],
         industry=data["industry"],
@@ -44,16 +49,11 @@ def get_companies():
     }
     print(params["industry"])
     try:
-        if params["industry"] is not None:
-            companies = Company.query.filter_by(industry=params["industry"]).all()
-
-        elif params["technology"] is not None:
-            companies = Company.query.filter_by(technology=params["technology"]).all()
-
-        elif params["location"] is not None:
-            companies = Company.query.filter_by(location=params["location"]).all()
-        else:
-            companies = Company.query.all()
+        for param in params:
+            if params[param] is not None:
+                companies = Company.query.filter_by(**{param: params[param]}).all()
+            else:
+                companies = Company.query.all()
 
         companies = [
             {
@@ -78,6 +78,7 @@ def get_companies():
 def get_company(company_id):
     company = Company.query.get_or_404(company_id)
     avg_rating = company.average_rating()
+
     return make_response(
         jsonify(
             {
@@ -97,40 +98,42 @@ def get_company(company_id):
     )
 
 
-@bp_companies.route("/api/companies/<int:company_id>", methods=["PUT"])
-def update_company(company_id):
-    company = Company.query.get_or_404(company_id)
-    data = request.get_json()
-    company.name = data["name"]
-    company.industry = data["industry"]
-    company.technology = data["technology"]
-    company.location = data["location"]
-    company.ceo = data["ceo"]
-    company.description = data["description"]
-    db.session.commit()
-
-    return make_response(jsonify({"message": "Company updated!"}), 200)
-
-
 @bp_companies.route("/api/companies/edit/<int:company_id>", methods=["PUT"])
 @jwt_required()
 def edit_company(company_id):
-    company = Company.query.get_or_404(company_id)
+    try:
+        company = Company.query.get_or_404(company_id)
+    except IntegrityError:
+        db.session.rollback()
+        return make_response(jsonify({"message": "Company not found!"}), 404)
+    # Check company representative
     representative = Representative.query.filter_by(company_id=company_id).first()
     if representative is None:
         return make_response(jsonify({"message": "You are not a representative!"}), 401)
+    # Check if user is company representative
     current_user_id = get_jwt_identity()
     if current_user_id != representative.user_id:
         return make_response(jsonify({"message": "You are not a representative!"}), 401)
+    # If user is company representative, update company
     data = request.get_json()
-    company.name = data["name"]
-    company.industry = data["industry"]
-    company.technology = data["technology"]
-    company.location = data["location"]
-    company.ceo = data["ceo"]
-    company.description = data["description"]
-    company.website = data["website"]
-    db.session.commit()
+    is_missing, key = check_missing_data(data)
+    if is_missing:
+        return make_response(jsonify({"message": f"Missing {key} parameter"}), 400)
+    valid_keys = [
+        "name",
+        "industry",
+        "technology",
+        "location",
+        "ceo",
+        "description",
+        "website",
+    ]
+    for key in data:
+        if key not in valid_keys:
+            return make_response(jsonify({"message": f"Invalid {key} parameter"}), 400)
+        else:
+            setattr(company, key, data[key])
+        db.session.commit()
 
     return make_response(jsonify({"message": "Company updated!"}), 200)
 
