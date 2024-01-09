@@ -4,10 +4,15 @@ from datetime import datetime, timedelta
 
 from email_validator import EmailNotValidError
 from flask import jsonify, make_response, request, url_for
-from flask_jwt_extended import (create_access_token, create_refresh_token,
-                                get_jwt_identity, jwt_required,
-                                set_access_cookies, set_refresh_cookies,
-                                unset_jwt_cookies)
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
+    jwt_required,
+    set_access_cookies,
+    set_refresh_cookies,
+    unset_jwt_cookies,
+)
 from flask_mail import Message
 from sqlalchemy.exc import IntegrityError
 
@@ -17,6 +22,8 @@ from src.extensions import db, mail
 from src.models.user import Email, Password, PasswordNotValidError, User
 from src.utils import add_to_db, check_missing_data
 import os
+from src.admin.admin_required import check_admin
+
 
 @bp_auth.route("/api/auth/register", methods=["POST"])
 def register():
@@ -44,12 +51,17 @@ def register():
     is_missing, key = check_missing_data(data)
     if is_missing:
         return make_response(jsonify({"message": f"Missing {key} parameter"}), 400)
+    is_confirmed_admin = False
+    if check_admin(data):
+        if request.headers.get == os.getenv("ADMIN_KEY"):
+            is_confirmed_admin = True
 
     user_to_register = User(
         name=data["name"],
         email=data["email"],
         password_hashed=data["password"],
         surrname=data["surrname"],
+        is_administrator=is_confirmed_admin,
     )
     register_instance = Register(user_to_register)
     try:
@@ -182,7 +194,7 @@ def create_token():
     db.session.commit()
     subject = "Reset Password Request"
     frontend_url = os.getenv("FRONTEND_URL")
-    reset_url = f'{frontend_url}/reset-password/{reset_token}'
+    reset_url = f"{frontend_url}/reset-password/{reset_token}"
     body = f"To reset your password, click the following link: {reset_url}"
 
     msg = Message(
@@ -204,7 +216,9 @@ def reset_password(token):
         return make_response(jsonify({"message": "Token is missing!"}), 400)
     user = User.query.filter_by(token=token).first()
     if user is None:
-        return make_response(jsonify({"message": "user with given token does not exist"}), 404)
+        return make_response(
+            jsonify({"message": "user with given token does not exist"}), 404
+        )
     Password.change_password(user, request.get_json()["password"])
     user.token = None
     db.session.commit()

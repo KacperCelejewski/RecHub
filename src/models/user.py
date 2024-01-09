@@ -46,9 +46,6 @@ class Email:
         return f"{self.email}"
 
 
-
-
-
 class User(db.Model, UserMixin):
     """
     Represents a user in the system.
@@ -70,12 +67,17 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(), unique=True, nullable=False)
     token = db.Column(db.String(), unique=True, nullable=True)
     password_hashed = db.Column(db.String(), unique=True, nullable=False)
+    is_administrator = db.Column(db.Boolean, nullable=False, default=False)
     opinions = db.relationship("Opinion", backref="author", lazy=True)
 
     representative = db.relationship("Representative", backref="user", lazy=True)
 
     def __repr__(self):
         return f"<User {self.name} {self.surrname} {self.email}>"
+    def check_admin(self):
+        return self.is_administrator
+    
+
 
 
 class Password:
