@@ -1,9 +1,12 @@
 import base64
+from io import StringIO
 
 from flask import jsonify, make_response, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
+from flask import send_file
+
 
 from src.companies import bp_companies
 from src.extensions import db
@@ -95,6 +98,20 @@ def get_company(company_id):
             }
         ),
         200,
+    )
+
+
+@bp_companies.route("/api/companies/download/<int:company_id>", methods=["GET"])
+def download_company_data(company_id):
+    company = Company.query.get_or_404(company_id)
+    output = StringIO()
+    output.write("company, location, technology, industry, ceo, description\n")
+    output.write(
+        f"{company.name}, {company.location}, {company.technology}, {company.industry}, {company.ceo}, {company.description}\n"
+    )
+    output.seek(0)
+    return send_file(
+        output, as_attachment=True, attachment_filename=f"{company.name}.csv"
     )
 
 
