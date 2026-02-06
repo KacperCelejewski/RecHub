@@ -1,9 +1,9 @@
+import pytest
+from email_validator import EmailNotValidError
+
 from src.auth.register import Register, UserAlreadyExistsError
 from src.extensions import db
 from src.models.user import Email, Password, PasswordNotValidError, User
-import pytest
-from email_validator import EmailNotValidError
-import pytest
 
 
 @pytest.fixture
